@@ -7,6 +7,7 @@ import subprocess
 from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
+from distutils.sysconfig import get_python_inc, get_config_var
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
@@ -31,8 +32,12 @@ class CMakeBuild(build_ext):
 
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
-        cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPYTHON_EXECUTABLE=' + sys.executable]
+        cmake_args = [
+            '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
+            '-DPYTHON_EXECUTABLE=' + sys.executable,
+            '-DPYTHON_INCLUDE_DIR=' + get_python_inc(),
+            '-DPYTHON_LIBRARY=' + get_config_var('LIBDIR')
+        ]
 
         build_type = os.environ.get("BUILD_TYPE", "Release")
         build_args = ['--config', build_type]
